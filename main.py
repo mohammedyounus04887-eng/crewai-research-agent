@@ -19,6 +19,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 llm = LLM(
     model="openrouter/openrouter/free",
     base_url="https://openrouter.ai/api/v1",
@@ -42,8 +43,8 @@ def research(request: ResearchRequest):
     try:
         fetcher = Agent(
             role="Data Fetching Agent",
-            goal="Fetch reliable web information about the topic",
-            backstory="You are a fast web researcher. Collect only useful facts.",
+            goal="Fetch useful and reliable information quickly",
+            backstory="You are a fast web researcher. Collect only the most important facts.",
             tools=[search_tool],
             llm=llm,
             verbose=True,
@@ -53,8 +54,8 @@ def research(request: ResearchRequest):
 
         summarizer = Agent(
             role="Summarizing Agent",
-            goal="Summarize fetched information clearly",
-            backstory="You convert research into short and simple key points.",
+            goal="Summarize research into short clear points",
+            backstory="You turn research notes into simple bullet points.",
             llm=llm,
             verbose=True,
             max_iter=1,
@@ -63,8 +64,8 @@ def research(request: ResearchRequest):
 
         report_writer = Agent(
             role="Report Writing Agent",
-            goal="Write a clean structured research report",
-            backstory="You write professional reports with headings and conclusion.",
+            goal="Write a short structured report",
+            backstory="You create clean reports with title, bullet points, and conclusion.",
             llm=llm,
             verbose=True,
             max_iter=1,
@@ -73,8 +74,8 @@ def research(request: ResearchRequest):
 
         reviewer = Agent(
             role="Review Agent",
-            goal="Review and polish the final report",
-            backstory="You improve clarity, grammar, and structure without making it too long.",
+            goal="Polish the report without increasing length",
+            backstory="You improve grammar, clarity, and flow while keeping the report short.",
             llm=llm,
             verbose=True,
             max_iter=1,
@@ -82,26 +83,26 @@ def research(request: ResearchRequest):
         )
 
         fetch_task = Task(
-            description="Fetch reliable information about: {topic}. Keep it concise.",
-            expected_output="5 key facts, 3 examples, and 3 useful source names.",
+            description="Fetch reliable information about: {topic}. Keep it very concise.",
+            expected_output="Only 5 key facts and 2 source names.",
             agent=fetcher,
         )
 
         summary_task = Task(
-            description="Summarize the fetched research into simple bullet points.",
-            expected_output="A short summary with 6 clear bullet points.",
+            description="Summarize the fetched research into short bullet points.",
+            expected_output="5 short bullet points.",
             agent=summarizer,
         )
 
         report_task = Task(
-            description="Write a clear research report from the summary.",
-            expected_output="A report under 700 words with title, introduction, main points, examples, and conclusion.",
+            description="Write a short research report from the summary.",
+            expected_output="A report under 400 words with title, 5 bullet points, and conclusion.",
             agent=report_writer,
         )
 
         review_task = Task(
-            description="Review and polish the report without making it longer.",
-            expected_output="Final polished report under 700 words.",
+            description="Review and polish the report without increasing length.",
+            expected_output="Final polished report under 400 words.",
             agent=reviewer,
         )
 
@@ -113,7 +114,13 @@ def research(request: ResearchRequest):
         )
 
         result = crew.kickoff(inputs={"topic": request.topic})
-        return {"topic": request.topic, "report": str(result)}
+        return {
+            "topic": request.topic,
+            "report": str(result)
+        }
 
     except Exception as e:
-        return {"error": str(e), "traceback": traceback.format_exc()}
+        return {
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
