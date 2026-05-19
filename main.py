@@ -3,12 +3,20 @@ from pydantic import BaseModel
 from crewai import Agent, Task, Crew, Process, LLM
 from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import traceback
 
 load_dotenv()
 
 app = FastAPI(title="CrewAI Research Agent")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 llm = LLM(
     model="openrouter/openrouter/free",
