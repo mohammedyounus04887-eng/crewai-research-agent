@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 llm = LLM(
-    model="openrouter/openai/gpt-4o-mini",
+    model="openrouter/openrouter/free",
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
